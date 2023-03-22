@@ -7,9 +7,6 @@ createdb:
 dropdb:
 	docker exec -it postgresInstance1 dropdb --username=root bank
 
-dbcli:
-	docker exec -it postgresInstance1 psql
-
 migrateup:
 	migrate -path db/migration -database "postgresql://root:123@localhost:5432/bank?sslmode=disable" -verbose up
 
@@ -19,4 +16,4 @@ migratedown:
 sqlc:
 	sqlc generate
 
-.PHONY: postgres createdb dropdb dbcli migrateup migratedown sqlc
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc
