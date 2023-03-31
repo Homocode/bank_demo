@@ -6,10 +6,10 @@ import (
 	"fmt"
 )
 
-// Store provides all the functions to execute db queries
-// and transactions
+// Store provides all the functions to execute transactions
+// and db queries
 type Store struct {
-	//With this, Store has the properties of the type Queries.
+	//With this, Store has the properties of type Queries.
 	//It`s call composition and is used to inherit functionality.
 	*Queries
 	db *sql.DB
@@ -56,14 +56,15 @@ type TransferTxResult struct {
 	ToEntry     Entries
 }
 
+var txKey = struct{}{}
+
 // TransferTx performs a transfer between two accounts by creating a transfer record,
-// two entry records (money out FromAccount and money in ToAccount) and update accounts balances.
+// two entry records (money out FromAccount and money in ToAccount) and update accounts balance.
 func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
-
 		//Createa a transfer record to persist the amount and accounts involved
 		//in the transference
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
@@ -87,7 +88,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 		//Creates an entry record to persist the amount of money entering the account
 		//where it is transferred to
-		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountId,
 			Amount:    arg.Amount,
 		})
@@ -95,7 +96,22 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		//TODO:Updaate accounts balance
+		//Update accounts balance
+		result.FromAccount, err = q.AddAmountToAccountBalance(ctx, AddAmountToAccountBalanceParams{
+			ID:     arg.FromAccountId,
+			Amount: -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		result.ToAccount, err = q.AddAmountToAccountBalance(ctx, AddAmountToAccountBalanceParams{
+			ID:     arg.ToAccountId,
+			Amount: arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
