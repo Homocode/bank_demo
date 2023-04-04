@@ -34,13 +34,13 @@ jobs:
           go-version: 1.19
 
       - name: Install go-migrate CLI
-        # run a multi-line command. Extract the file, move it to /usr/bin under the name "migrate"
-        # extract the folder "migrate.linux-amd64"
-        # mv the folder to /usr/bin and renamed it to "migrate"
+        # run a multi-line command
+        # download the binary migrate from the url
+        # mv the binary to /usr/bin
         # wich migrate to see if the binay is there (works by locating the executable file matching the given command)
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate.linux-amd64 /usr/bin/migrate
+          sudo mv migrate /usr/bin/
           wich migrate
 
       - name: Run db migration
