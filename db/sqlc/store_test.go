@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"testing"
 
@@ -24,17 +23,16 @@ func TestTransferTx(t *testing.T) {
 
 	// Run n concurrent TransferTx. Each one in one of
 	// the n go rutines.
-	n := 2
+	n := 5
 	results := make(chan TransferTxResult, n)
 	errors := make(chan error, n)
 	var wg = &sync.WaitGroup{}
 	wg.Add(n)
 	for i := 0; i < n; i++ {
-		txName := fmt.Sprintf("tx %d", i+1)
+
 		go func() {
 			defer wg.Done()
-			ctx := context.WithValue(context.Background(), txKey, txName)
-			result, err := store.TransferTx(ctx, arg)
+			result, err := store.TransferTx(context.Background(), arg)
 			results <- result
 			errors <- err
 		}()
@@ -113,4 +111,60 @@ func TestTransferTx(t *testing.T) {
 		require.Equal(t, account1.Balance-int64(txAmountAcumm), updatedAccount1.Balance+int64(amount*(n-i-1)))
 		require.Equal(t, account2.Balance+int64(txAmountAcumm), updatedAccount2.Balance-int64(amount*(n-i-1)))
 	}
+}
+
+func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDb)
+
+	account1, _, _ := persistRandomAccount(t, "")
+	account2, _, _ := persistRandomAccount(t, "")
+	amount := 400
+
+	// Run n concurrent TransferTx. Each one in one of
+	// the n go rutines.
+	n := 10
+	errors := make(chan error, n)
+	var wg = &sync.WaitGroup{}
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+		arg := TransferTxParams{
+			FromAccountId: account1.ID,
+			ToAccountId:   account2.ID,
+			Amount:        int64(amount),
+		}
+
+		// for half of go rutines the Tx is from acc2 to acc1
+		if i%2 == 0 {
+			arg = TransferTxParams{
+				FromAccountId: account2.ID,
+				ToAccountId:   account1.ID,
+				Amount:        int64(amount),
+			}
+		}
+
+		go func() {
+			defer wg.Done()
+			_, err := store.TransferTx(context.Background(), arg)
+			errors <- err
+		}()
+	}
+	wg.Wait()
+
+	// Validate test cases
+	for i := 0; i < n; i++ {
+		err := <-errors
+		require.NoError(t, err)
+	}
+
+	// check persisted final balance
+	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
+
+	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	require.NoError(t, err)
+
+	// As half of the transactions are going from acc1 to acc2 and the other half viceversa,
+	// the fianl balance is the same as the intial
+	require.Equal(t, account1.Balance, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance, updatedAccount2.Balance)
 }
