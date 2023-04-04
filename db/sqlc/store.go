@@ -9,8 +9,8 @@ import (
 // Store provides all the functions to execute transactions
 // and db queries
 type Store struct {
-	//With this, Store has the properties of type Queries.
-	//It`s call composition and is used to inherit functionality.
+	// With this, Store has the properties of type Queries.
+	// It`s call composition and is used to inherit functionality.
 	*Queries
 	db *sql.DB
 }
@@ -63,8 +63,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
-		//Createa a transfer record to persist the amount and accounts involved
-		//in the transference
+		// Createa a transfer record to persist the amount and accounts involved
+		// in the transference
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountId,
 			ToAccountID:   arg.ToAccountId,
@@ -74,8 +74,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		//Creates an entry record to persist the amount of money leaving the account
-		//where it is transferred from
+		// Creates an entry record to persist the amount of money leaving the account
+		// where it is transferred from
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountId,
 			Amount:    -arg.Amount,
@@ -84,8 +84,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		//Creates an entry record to persist the amount of money entering the account
-		//where it is transferred to
+		// Creates an entry record to persist the amount of money entering the account
+		// where it is transferred to
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountId,
 			Amount:    arg.Amount,
@@ -94,7 +94,9 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		//Update accounts balance
+		// Update accounts balance
+		// Update in a specific order, in this case the account with the smaller id first, to update in
+		// a consistent order to prevent a deadlock
 		if arg.FromAccountId < arg.ToAccountId {
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountId, -arg.Amount, arg.ToAccountId, arg.Amount)
 			if err != nil {
