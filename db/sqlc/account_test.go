@@ -61,8 +61,9 @@ func TestListAccounts(t *testing.T) {
 	n := 10
 
 	arg := ListAccountsParams{
-		Owner: "pedro",
-		Limit: int32(n),
+		Owner:  "pedro",
+		Limit:  int32(n),
+		Offset: 0,
 	}
 
 	for i := 0; i < n; i++ {
