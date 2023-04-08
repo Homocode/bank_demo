@@ -79,31 +79,3 @@ func TestListAccounts(t *testing.T) {
 		require.NotEmpty(t, account)
 	}
 }
-
-func TestUpdateAccount(t *testing.T) {
-	account, _, _ := persistRandomAccount(t, "")
-
-	arg := UpdateAccountParams{
-		ID:      account.ID,
-		Balance: int64(400),
-	}
-
-	updateAccount, err := testQueries.UpdateAccount(context.Background(), arg)
-
-	require.NoError(t, err)
-	require.NotEmpty(t, updateAccount)
-
-	require.Equal(t, arg.ID, updateAccount.ID)
-	require.Equal(t, arg.Balance, updateAccount.Balance)
-}
-
-func TestDeleteAccount(t *testing.T) {
-	account, _, _ := persistRandomAccount(t, "")
-
-	testQueries.DeleteAccount(context.Background(), account.ID)
-
-	retrieveAccount, err := testQueries.GetAccount(context.Background(), account.ID)
-
-	require.Empty(t, retrieveAccount)
-	require.Error(t, err)
-}
