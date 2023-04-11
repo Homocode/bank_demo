@@ -21,4 +21,4 @@ type Querier interface {
 	ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfers, error)
 }
 
-var _ Querier = (*Queries)(string)
+var _ Querier = (*Queries)(nil)
