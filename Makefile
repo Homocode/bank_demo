@@ -23,6 +23,6 @@ server:
 	go run main.go
 
 mock:
-	mockgen -package mockdb -destination db/mock/sotre.go github.com/homocode/bank_demo/db/sqlc Store
+	mockgen -package mockdb -destination api/mock/store.go github.com/homocode/bank_demo/api Store
 
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock
