@@ -1,17 +1,24 @@
 package api
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	db "github.com/homocode/bank_demo/db/sqlc"
 )
 
+type Store interface {
+	db.Querier
+	TransferTx(ctx context.Context, arg db.TransferTxParams) (db.TransferTxResult, error)
+}
+
 type Server struct {
-	store  db.Store
+	store  Store
 	router *gin.Engine
 }
 
 // Creates a new HTTP server and setup routing
-func NewServer(store db.Store) *Server {
+func NewServer(store Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
