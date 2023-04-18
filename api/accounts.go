@@ -10,10 +10,10 @@ import (
 
 type createAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=ARS USD EUR"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
-func (server *Server) createAccount(ctx *gin.Context) {
+func (s *Server) createAccount(ctx *gin.Context) {
 	var req createAccountRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -27,7 +27,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		Balance:  0,
 	}
 
-	account, err := server.store.CreateAccount(ctx, arg)
+	account, err := s.store.CreateAccount(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -40,7 +40,7 @@ type getAccountRequest struct {
 	Id int64 `uri:"id" binding:"required,gt=0"`
 }
 
-func (server *Server) getAccount(ctx *gin.Context) {
+func (s *Server) getAccount(ctx *gin.Context) {
 	var req getAccountRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -48,7 +48,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		return
 	}
 
-	account, err := server.store.GetAccount(ctx, req.Id)
+	account, err := s.store.GetAccount(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -67,7 +67,7 @@ type listAccountsRequest struct {
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=10"`
 }
 
-func (server *Server) listAccounts(ctx *gin.Context) {
+func (s *Server) listAccounts(ctx *gin.Context) {
 	var req listAccountsRequest
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -81,7 +81,7 @@ func (server *Server) listAccounts(ctx *gin.Context) {
 		Offset: (req.PageSize * req.PageId) - req.PageSize,
 	}
 
-	accounts, err := server.store.ListAccounts(ctx, arg)
+	accounts, err := s.store.ListAccounts(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

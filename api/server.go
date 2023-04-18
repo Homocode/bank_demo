@@ -2,8 +2,11 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	db "github.com/homocode/bank_demo/db/sqlc"
 )
 
@@ -36,18 +39,31 @@ type Server struct {
 func NewServer(store Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
-	server.router = router
 
-	router.POST("/accounts", server.createAccount)
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccounts)
+	// Engine returns
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
+	const (
+		pathAccounts = "/accounts"
+		pathTransfer = "/transfer"
+	)
+
+	router.POST(fmt.Sprintf("%v", pathAccounts), server.createAccount)
+	router.GET(fmt.Sprintf("%v/:id", pathAccounts), server.getAccount)
+	router.GET(fmt.Sprintf("%v", pathAccounts), server.listAccounts)
+
+	router.POST(fmt.Sprintf("%v", pathTransfer), server.transferBtwAccounts)
+
+	server.router = router
 
 	return server
 }
 
 // Runs the HTTP server on a specific address
-func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+func (s *Server) Start(address string) error {
+	return s.router.Run(address)
 }
 
 func errorResponse(err error) gin.H {
