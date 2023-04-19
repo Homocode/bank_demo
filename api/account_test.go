@@ -24,7 +24,13 @@ func TestCreateAccountApi(t *testing.T) {
 	}
 
 	// this is to pass it to Return in the store.EXPECT() to match the type
-	account := randomAccount("")
+	account := mockAccount("")
+
+	arg := db.CreateAccountParams{
+		Owner:    reqBody.Owner,
+		Currency: reqBody.Currency,
+		Balance:  0,
+	}
 
 	testCases := []struct {
 		name          string
@@ -36,11 +42,6 @@ func TestCreateAccountApi(t *testing.T) {
 			name:    "Ok",
 			reqBody: reqBody,
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateAccountParams{
-					Owner:    reqBody.Owner,
-					Currency: reqBody.Currency,
-					Balance:  0,
-				}
 				store.EXPECT().
 					CreateAccount(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -70,11 +71,6 @@ func TestCreateAccountApi(t *testing.T) {
 			name:    "Internal Server Error",
 			reqBody: reqBody,
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateAccountParams{
-					Owner:    reqBody.Owner,
-					Currency: reqBody.Currency,
-					Balance:  0,
-				}
 				store.EXPECT().
 					CreateAccount(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -119,7 +115,7 @@ func TestCreateAccountApi(t *testing.T) {
 
 func TestGetAccountApi(t *testing.T) {
 	owner := util.RandomOwner()
-	account := randomAccount(owner)
+	account := mockAccount(owner)
 
 	reqParams := getAccountRequest{
 		Id: account.ID,
@@ -222,15 +218,19 @@ func TestListAccountsAPI(t *testing.T) {
 
 	accounts := make([]db.Accounts, pageSize)
 	for i := 0; i < pageSize; i++ {
-		accounts[i] = randomAccount(owner)
+		accounts[i] = mockAccount(owner)
 	}
-
-	fmt.Println(accounts)
 
 	reqQuery := listAccountsRequest{
 		Owner:    owner,
 		PageId:   1,
 		PageSize: int32(pageSize),
+	}
+
+	arg := db.ListAccountsParams{
+		Owner:  reqQuery.Owner,
+		Limit:  reqQuery.PageSize,
+		Offset: (reqQuery.PageSize * reqQuery.PageId) - reqQuery.PageSize,
 	}
 
 	testCases := []struct {
@@ -243,11 +243,6 @@ func TestListAccountsAPI(t *testing.T) {
 			name:     "Ok",
 			reqQuery: reqQuery,
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.ListAccountsParams{
-					Owner:  reqQuery.Owner,
-					Limit:  reqQuery.PageSize,
-					Offset: (reqQuery.PageSize * reqQuery.PageId) - reqQuery.PageSize,
-				}
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -278,11 +273,6 @@ func TestListAccountsAPI(t *testing.T) {
 			name:     "Not Found",
 			reqQuery: reqQuery,
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.ListAccountsParams{
-					Owner:  reqQuery.Owner,
-					Limit:  reqQuery.PageSize,
-					Offset: (reqQuery.PageSize * reqQuery.PageId) - reqQuery.PageSize,
-				}
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -296,11 +286,6 @@ func TestListAccountsAPI(t *testing.T) {
 			name:     "Internal Server Error",
 			reqQuery: reqQuery,
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.ListAccountsParams{
-					Owner:  reqQuery.Owner,
-					Limit:  reqQuery.PageSize,
-					Offset: (reqQuery.PageSize * reqQuery.PageId) - reqQuery.PageSize,
-				}
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -347,11 +332,12 @@ func TestListAccountsAPI(t *testing.T) {
 	}
 }
 
-func randomAccount(owner string) db.Accounts {
+func mockAccount(owner string) db.Accounts {
 	return db.Accounts{
-		ID:      util.RandomInt(1, 100),
-		Owner:   owner,
-		Balance: util.RandomMoney(),
+		ID:       util.RandomInt(1, 100),
+		Owner:    owner,
+		Balance:  util.RandomMoney(),
+		Currency: util.RandomCurrency(),
 	}
 }
 

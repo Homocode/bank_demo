@@ -31,7 +31,7 @@ func RandomOwner() string {
 }
 
 func RandomMoney() int64 {
-	return int64(RandomInt(0, 1000))
+	return int64(RandomInt(1, 1000))
 }
 func RandomCurrency() string {
 	currencies := []string{ARS, USD, EUR}
