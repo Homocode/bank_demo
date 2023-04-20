@@ -24,8 +24,10 @@ func persistRandomTransfer(t *testing.T, account1 Accounts, account2 Accounts) (
 }
 
 func TestCreateTransfer(t *testing.T) {
-	account1, _, _ := persistRandomAccount(t, "")
-	account2, _, _ := persistRandomAccount(t, "")
+	user1, _, _ := persistRandomUser(t, "")
+	account1, _, _ := persistRandomAccount(t, user1)
+	user2, _, _ := persistRandomUser(t, "")
+	account2, _, _ := persistRandomAccount(t, user2)
 
 	transfer, arg, err := persistRandomTransfer(t, account1, account2)
 
@@ -42,8 +44,10 @@ func TestCreateTransfer(t *testing.T) {
 }
 
 func TestGetTransfer(t *testing.T) {
-	account1, _, _ := persistRandomAccount(t, "")
-	account2, _, _ := persistRandomAccount(t, "")
+	user1, _, _ := persistRandomUser(t, "")
+	account1, _, _ := persistRandomAccount(t, user1)
+	user2, _, _ := persistRandomUser(t, "")
+	account2, _, _ := persistRandomAccount(t, user2)
 
 	transfer, _, _ := persistRandomTransfer(t, account1, account2)
 
@@ -61,8 +65,10 @@ func TestGetTransfer(t *testing.T) {
 }
 
 func TestListTransfer(t *testing.T) {
-	account1, _, _ := persistRandomAccount(t, "")
-	account2, _, _ := persistRandomAccount(t, "")
+	user1, _, _ := persistRandomUser(t, "")
+	account1, _, _ := persistRandomAccount(t, user1)
+	user2, _, _ := persistRandomUser(t, "")
+	account2, _, _ := persistRandomAccount(t, user2)
 
 	var fromAccountId int64
 	n := 10

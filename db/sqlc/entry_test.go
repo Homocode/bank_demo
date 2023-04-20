@@ -24,7 +24,8 @@ func persistRandomEntry(t *testing.T, a Accounts) (Entries, CreateEntryParams, e
 }
 
 func TestCreateEntry(t *testing.T) {
-	testAccount, _, _ := persistRandomAccount(t, "")
+	user, _, _ := persistRandomUser(t, "")
+	testAccount, _, _ := persistRandomAccount(t, user)
 	entry, arg, err := persistRandomEntry(t, testAccount)
 
 	require.NoError(t, err)
@@ -39,7 +40,8 @@ func TestCreateEntry(t *testing.T) {
 }
 
 func TestGetEntry(t *testing.T) {
-	testAccount, _, _ := persistRandomAccount(t, "")
+	user, _, _ := persistRandomUser(t, "")
+	testAccount, _, _ := persistRandomAccount(t, user)
 	entry, _, _ := persistRandomEntry(t, testAccount)
 
 	retrievedEntry, err := testQueries.GetEntry(context.Background(), entry.ID)
@@ -55,7 +57,8 @@ func TestGetEntry(t *testing.T) {
 }
 
 func TestListEntries(t *testing.T) {
-	testAccount, _, _ := persistRandomAccount(t, "")
+	user, _, _ := persistRandomUser(t, "")
+	testAccount, _, _ := persistRandomAccount(t, user)
 
 	n := 10
 

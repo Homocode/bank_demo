@@ -21,6 +21,8 @@ CREATE TABLE "transfers" (
   "created_at" timestamptz DEFAULT (now())
 );
 
+CREATE INDEX ON "accounts" ("owner");
+
 CREATE INDEX ON "entries" ("account_id");
 
 CREATE INDEX ON "transfers" ("from_account_id");

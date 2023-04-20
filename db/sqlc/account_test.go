@@ -11,15 +11,11 @@ import (
 
 // Generetes random args and persist the account. Param owner set to "", generates random owner.
 // To create the account with a specific owner set it to <name> (this is used for TestListAccounts)
-func persistRandomAccount(t *testing.T, owner string) (Accounts, CreateAccountParams, error) {
+func persistRandomAccount(t *testing.T, user Users) (Accounts, CreateAccountParams, error) {
 	t.Helper() //Helper marks the calling function as a test helper function.
 
-	if owner == "" {
-		owner = util.RandomString(5)
-	}
-
 	arg := CreateAccountParams{
-		Owner:    owner,
+		Owner:    user.Email,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
@@ -29,7 +25,8 @@ func persistRandomAccount(t *testing.T, owner string) (Accounts, CreateAccountPa
 	return account, arg, err
 }
 func TestCreateAccount(t *testing.T) {
-	account, arg, err := persistRandomAccount(t, "")
+	user, _, _ := persistRandomUser(t, "")
+	account, arg, err := persistRandomAccount(t, user)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
@@ -42,7 +39,8 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
-	account, _, _ := persistRandomAccount(t, "")
+	user, _, _ := persistRandomUser(t, "")
+	account, _, _ := persistRandomAccount(t, user)
 	retrievedAccount, err := testQueries.GetAccount(context.Background(), account.ID)
 
 	require.NoError(t, err)
@@ -58,16 +56,17 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
-	n := 10
+	user, userArgs, _ := persistRandomUser(t, "ger@gmail.com")
+	n := 3
 
 	arg := ListAccountsParams{
-		Owner:  "pedro",
+		Owner:  userArgs.Email,
 		Limit:  int32(n),
 		Offset: 0,
 	}
 
 	for i := 0; i < n; i++ {
-		persistRandomAccount(t, arg.Owner)
+		persistRandomAccount(t, user)
 	}
 
 	retrieveAccounts, err := testQueries.ListAccounts(context.Background(), arg)
