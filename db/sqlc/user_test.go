@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -21,7 +22,7 @@ func persistRandomUser(t *testing.T, owner string) (Users, CreateUserParams, err
 		HashedPassword: "adsadads",
 		FullName:       "German",
 	}
-
+	fmt.Println("user params", arg)
 	user, err := testQueries.CreateUser(context.Background(), arg)
 
 	return user, arg, err

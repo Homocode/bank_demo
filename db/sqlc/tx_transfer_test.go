@@ -12,9 +12,9 @@ func TestTransferTx(t *testing.T) {
 	store := NewStore(testDb)
 
 	user1, _, _ := persistRandomUser(t, "")
-	account1, _, _ := persistRandomAccount(t, user1)
+	account1, _, _ := persistRandomAccount(t, user1, "")
 	user2, _, _ := persistRandomUser(t, "")
-	account2, _, _ := persistRandomAccount(t, user2)
+	account2, _, _ := persistRandomAccount(t, user2, "")
 	amount := 400
 
 	arg := TransferTxParams{
@@ -119,9 +119,9 @@ func TestTransferTxDeadlock(t *testing.T) {
 	store := NewStore(testDb)
 
 	user1, _, _ := persistRandomUser(t, "")
-	account1, _, _ := persistRandomAccount(t, user1)
+	account1, _, _ := persistRandomAccount(t, user1, "")
 	user2, _, _ := persistRandomUser(t, "")
-	account2, _, _ := persistRandomAccount(t, user2)
+	account2, _, _ := persistRandomAccount(t, user2, "")
 	amount := 400
 
 	// Run n concurrent TransferTx. Each one in one of
